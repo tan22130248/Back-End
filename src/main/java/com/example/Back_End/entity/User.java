@@ -3,7 +3,6 @@ package com.example.Back_End.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -23,13 +22,10 @@ public class User {
     @Column(nullable = false, unique = true, length = 255)
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
-    @Pattern(regexp = ".*@gmail\\..*", message = "Email phải có đuôi @gmail.com")
     private String email;
 
     @Column(nullable = false)
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 7, max = 255, message = "Mật khẩu phải từ 7 ký tự trở lên")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d).+$", message = "Mật khẩu phải có ít nhất 1 chữ hoa và 1 số")
     private String password;
 
     @Column(nullable = false, length = 32)
@@ -53,8 +49,14 @@ public class User {
     @Column(length = 10)
     private String gender;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String avatar;
+
+    @Column(name = "auth_provider", length = 20)
+    private String authProvider = "LOCAL";
+
+    @Column(name = "google_sub", length = 128)
+    private String googleSub;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -68,6 +70,7 @@ public class User {
         this.updatedAt = LocalDateTime.now();
         if (this.role == null) this.role = "USER";
         if (this.planType == null) this.planType = "FREE";
+        if (this.authProvider == null || this.authProvider.isBlank()) this.authProvider = "LOCAL";
     }
 
     @PreUpdate
@@ -165,6 +168,22 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    public String getGoogleSub() {
+        return googleSub;
+    }
+
+    public void setGoogleSub(String googleSub) {
+        this.googleSub = googleSub;
     }
 
     public LocalDateTime getCreatedAt() {

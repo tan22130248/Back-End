@@ -2,16 +2,19 @@ spring:
   application:
     name: Back-End
   config:
-    import: optional:file:./.env
+    import:
+      - optional:file:./.env[.properties]
+      - optional:file:../.env[.properties]
+      - optional:file:.env[.properties]
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: 22130248@st.hcmuaf.edu.vn
-    password: wnqe ckyg iutr ekxn
+    host: ${AUTH_MAIL_HOST:smtp.gmail.com}
+    port: ${AUTH_MAIL_PORT:587}
+    username: ${AUTH_MAIL_USERNAME:}
+    password: ${AUTH_MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -19,9 +22,9 @@ spring:
           starttls:
             enable: true
   datasource:
-    url: jdbc:mysql://localhost:3306/web_audio?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8
-    username: webaudio
-    password: webaudio
+    url: ${DB_URL:jdbc:mysql://localhost:3306/web_audio?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8}
+    username: ${DB_USERNAME:webaudio}
+    password: ${DB_PASSWORD:webaudio}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -33,16 +36,20 @@ spring:
         format_sql: true
 
 jwt:
-  secret: WebAudioVOX2026SecretKeyForJWTTokenGeneration
-  expiration: 86400000
+  secret: ${JWT_SECRET:WebAudioVOX2026SecretKeyForJWTTokenGeneration}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+  client-secret: ${GOOGLE_CLIENT_SECRET:}
 
 cloudflare:
   r2:
-    endpoint: ${R2_ENDPOINT:https://ce93c7c795116afd02f973d455765f75.r2.cloudflarestorage.com}
+    endpoint: ${R2_ENDPOINT:}
     bucket: ${R2_BUCKET:web-audio}
     access-key: ${R2_ACCESS_KEY:}
     secret-key: ${R2_SECRET_KEY:}
-    public-domain: ${R2_PUBLIC_DOMAIN:https://pub-902e8561cd8a4a2fab20f1c5ecbd3054.r2.dev}
+    public-domain: ${R2_PUBLIC_DOMAIN:}
 
 server:
   port: 8080

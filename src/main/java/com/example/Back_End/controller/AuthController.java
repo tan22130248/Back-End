@@ -4,6 +4,7 @@ import com.example.Back_End.dto.RegisterRequest;
 import com.example.Back_End.entity.User;
 import com.example.Back_End.repository.UserRepository;
 import com.example.Back_End.service.EmailService;
+import com.example.Back_End.service.GoogleAuthService;
 import com.example.Back_End.service.OtpService;
 import com.example.Back_End.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -25,13 +26,22 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
     private final OtpService otpService;
+    private final GoogleAuthService googleAuthService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmailService emailService, OtpService otpService) {
+    public AuthController(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil,
+            EmailService emailService,
+            OtpService otpService,
+            GoogleAuthService googleAuthService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.emailService = emailService;
         this.otpService = otpService;
+        this.googleAuthService = googleAuthService;
     }
 
     @PostMapping("/register")
@@ -55,6 +65,31 @@ public class AuthController {
         response.put("success", true);
         response.put("message", "Đăng ký thành công!");
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String idToken = body != null ? body.get("idToken") : null;
+            Map<String, Object> data = googleAuthService.loginWithIdToken(idToken);
+            response.put("success", true);
+            response.put("message", "Đăng nhập Google thành công.");
+            response.put("data", data);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Đăng nhập Google thất bại. Vui lòng thử lại.");
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
 
     @PostMapping("/login")
