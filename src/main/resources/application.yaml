@@ -52,4 +52,4 @@ cloudflare:
     public-domain: ${R2_PUBLIC_DOMAIN:}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
