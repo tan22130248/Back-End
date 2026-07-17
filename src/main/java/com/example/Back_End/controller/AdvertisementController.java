@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/ads")
+@RequestMapping("/api/promotions")
 public class AdvertisementController {
 
     private final AdvertisementRepository advertisementRepository;
