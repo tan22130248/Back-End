@@ -8,8 +8,8 @@ spring:
       - optional:file:.env[.properties]
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: ${MULTIPART_MAX_FILE_SIZE:2GB}
+      max-request-size: ${MULTIPART_MAX_REQUEST_SIZE:2GB}
   mail:
     host: ${AUTH_MAIL_HOST:smtp.gmail.com}
     port: ${AUTH_MAIL_PORT:587}
@@ -62,4 +62,5 @@ audio:
   ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
   bitrate-kbps: ${AUDIO_BITRATE_KBPS:48}
   sample-rate: ${AUDIO_SAMPLE_RATE:22050}
-  process-timeout-sec: ${AUDIO_PROCESS_TIMEOUT_SEC:600}
+  process-timeout-sec: ${AUDIO_PROCESS_TIMEOUT_SEC:1800}
+  max-input-mb: ${AUDIO_MAX_INPUT_MB:2048}

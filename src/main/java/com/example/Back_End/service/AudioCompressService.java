@@ -23,23 +23,26 @@ import java.util.concurrent.TimeUnit;
 public class AudioCompressService {
 
     private static final Set<String> ALLOWED_EXT = Set.of("mp3", "mp4", "m4a", "wav", "mpeg", "x-m4a");
-    private static final long MAX_INPUT_BYTES = 200L * 1024 * 1024; // 200MB
 
     private final String ffmpegPath;
     private final int bitrateKbps;
     private final int sampleRate;
     private final long processTimeoutSec;
+    private final long maxInputBytes;
 
     public AudioCompressService(
             @Value("${audio.ffmpeg-path:ffmpeg}") String ffmpegPath,
             @Value("${audio.bitrate-kbps:48}") int bitrateKbps,
             @Value("${audio.sample-rate:22050}") int sampleRate,
-            @Value("${audio.process-timeout-sec:600}") long processTimeoutSec
+            @Value("${audio.process-timeout-sec:1800}") long processTimeoutSec,
+            @Value("${audio.max-input-mb:2048}") long maxInputMb
     ) {
         this.ffmpegPath = ffmpegPath != null && !ffmpegPath.isBlank() ? ffmpegPath.trim() : "ffmpeg";
         this.bitrateKbps = bitrateKbps > 0 ? bitrateKbps : 48;
         this.sampleRate = sampleRate > 0 ? sampleRate : 22050;
-        this.processTimeoutSec = processTimeoutSec > 0 ? processTimeoutSec : 600;
+        this.processTimeoutSec = processTimeoutSec > 0 ? processTimeoutSec : 1800;
+        long mb = maxInputMb > 0 ? maxInputMb : 2048;
+        this.maxInputBytes = mb * 1024L * 1024L;
     }
 
     public static class CompressResult {
@@ -72,8 +75,9 @@ public class AudioCompressService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File audio không hợp lệ.");
         }
-        if (file.getSize() > MAX_INPUT_BYTES) {
-            throw new IllegalArgumentException("File quá lớn (tối đa 200MB).");
+        if (file.getSize() > maxInputBytes) {
+            long maxMb = maxInputBytes / (1024L * 1024L);
+            throw new IllegalArgumentException("File quá lớn (tối đa " + maxMb + "MB). Video dài hãy nén nhẹ trước hoặc chia nhỏ.");
         }
         String ext = extensionOf(file.getOriginalFilename());
         String ct = file.getContentType() != null ? file.getContentType().toLowerCase(Locale.ROOT) : "";
