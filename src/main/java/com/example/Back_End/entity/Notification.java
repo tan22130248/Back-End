@@ -14,28 +14,28 @@ public class Notification {
     @Column(name = "user_email", nullable = false, length = 255)
     private String userEmail;
 
-    @Column(name = "audio_id", nullable = false)
+    @Column(name = "audio_id")
     private Long audioId;
 
-    @Column(name = "audio_title", nullable = false, length = 255)
+    @Column(name = "audio_title", length = 255)
     private String audioTitle;
 
-    @Column(name = "audio_author", nullable = false, length = 100)
+    @Column(name = "audio_author", length = 100)
     private String audioAuthor;
 
-    @Column(name = "audio_genre", nullable = false, length = 50)
+    @Column(name = "audio_genre", length = 50)
     private String audioGenre;
 
-    @Column(name = "audio_duration", nullable = false, length = 20)
+    @Column(name = "audio_duration", length = 20)
     private String audioDuration;
 
-    @Column(name = "audio_url", nullable = false, length = 500)
+    @Column(name = "audio_url", length = 500)
     private String audioUrl;
 
     @Column(name = "cover_image_url", length = 500)
     private String coverImageUrl;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
     @Column(name = "is_read", nullable = false)

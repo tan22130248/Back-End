@@ -35,17 +35,7 @@ public class NotificationService {
 
         List<Notification> notifications = new ArrayList<>();
         for (User user : allUsers) {
-            Notification notification = new Notification();
-            notification.setUserEmail(user.getEmail());
-            notification.setAudioId(audioId);
-            notification.setAudioTitle(title);
-            notification.setAudioAuthor(author);
-            notification.setAudioGenre(genre);
-            notification.setAudioDuration(duration);
-            notification.setAudioUrl(audioUrl);
-            notification.setCoverImageUrl(coverImageUrl);
-            notification.setMessage(message);
-            notification.setRead(false);
+            Notification notification = buildAudioNotification(user.getEmail(), audioId, title, author, genre, duration, audioUrl, coverImageUrl, message);
             notifications.add(notification);
         }
         notificationRepository.saveAll(notifications);
@@ -55,6 +45,59 @@ public class NotificationService {
                 sendNewAudioEmail(user.getEmail(), user.getFullName(), title, author, genre, duration, audioUrl, coverImageUrl, audioId);
             }
         }
+    }
+
+    /** Gửi thông báo hệ thống / phản hồi cho một user */
+    public void notifyUser(String email, String title, String message) {
+        if (email == null || email.isBlank() || message == null || message.isBlank()) return;
+        Notification n = buildSystemNotification(email.trim(), title, message);
+        notificationRepository.save(n);
+    }
+
+    /** Gửi thông báo hệ thống cho toàn bộ user */
+    public int notifyAllUsers(String title, String message) {
+        if (message == null || message.isBlank()) return 0;
+        List<User> allUsers = userRepository.findAll();
+        List<Notification> notifications = new ArrayList<>();
+        for (User user : allUsers) {
+            if (user.getEmail() == null || user.getEmail().isBlank()) continue;
+            notifications.add(buildSystemNotification(user.getEmail(), title, message));
+        }
+        if (!notifications.isEmpty()) {
+            notificationRepository.saveAll(notifications);
+        }
+        return notifications.size();
+    }
+
+    private Notification buildSystemNotification(String email, String title, String message) {
+        // Dùng placeholder non-null để tương thích DB cũ (cột audio_* từng NOT NULL)
+        Notification n = new Notification();
+        n.setUserEmail(email);
+        n.setAudioId(0L);
+        n.setAudioTitle(title != null && !title.isBlank() ? title : "Thông báo hệ thống");
+        n.setAudioAuthor("AudioStory");
+        n.setAudioGenre("Hệ thống");
+        n.setAudioDuration("0:00");
+        n.setAudioUrl("#");
+        n.setCoverImageUrl(null);
+        n.setMessage(message != null ? message : "");
+        n.setRead(false);
+        return n;
+    }
+
+    private Notification buildAudioNotification(String email, Long audioId, String title, String author, String genre, String duration, String audioUrl, String coverImageUrl, String message) {
+        Notification notification = new Notification();
+        notification.setUserEmail(email);
+        notification.setAudioId(audioId);
+        notification.setAudioTitle(title);
+        notification.setAudioAuthor(author);
+        notification.setAudioGenre(genre);
+        notification.setAudioDuration(duration);
+        notification.setAudioUrl(audioUrl);
+        notification.setCoverImageUrl(coverImageUrl);
+        notification.setMessage(message);
+        notification.setRead(false);
+        return notification;
     }
 
     private void sendNewAudioEmail(String to, String userName, String title, String author, String genre, String duration, String audioUrl, String coverImageUrl, Long audioId) {

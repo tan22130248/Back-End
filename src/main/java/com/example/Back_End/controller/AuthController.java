@@ -127,6 +127,7 @@ public class AuthController {
         data.put("email", user.getEmail());
         data.put("role", user.getRole());
         data.put("planType", user.getPlanType() != null ? user.getPlanType() : "FREE");
+        data.put("avatar", user.getAvatar() != null ? user.getAvatar() : "");
 
         response.put("success", true);
         response.put("message", "Đăng nhập thành công.");
@@ -256,7 +257,7 @@ public class AuthController {
             u.put("phone", "");
             u.put("gender", "");
             u.put("birthday", "");
-            u.put("avatar", "");
+            u.put("avatar", user.getAvatar() != null ? user.getAvatar() : "");
             users.add(u);
         }
         Map<String, Object> response = new HashMap<>();
@@ -285,6 +286,7 @@ public class AuthController {
         data.put("role", user.getRole());
         data.put("planType", user.getPlanType() != null ? user.getPlanType() : "FREE");
         data.put("planExpiresAt", user.getPlanExpiresAt() != null ? user.getPlanExpiresAt().toString() : null);
+        data.put("avatar", user.getAvatar() != null ? user.getAvatar() : "");
         response.put("success", true);
         response.put("data", data);
         return ResponseEntity.ok(response);
