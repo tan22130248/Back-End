@@ -5,6 +5,7 @@ import com.example.Back_End.entity.Audio;
 import com.example.Back_End.entity.Like;
 import com.example.Back_End.repository.AudioRepository;
 import com.example.Back_End.repository.LikeRepository;
+import com.example.Back_End.service.AudioCompressService;
 import com.example.Back_End.service.NotificationService;
 import com.example.Back_End.service.R2StorageService;
 import jakarta.validation.Valid;
@@ -33,12 +34,20 @@ public class AudioController {
     private final LikeRepository likeRepository;
     private final R2StorageService r2StorageService;
     private final NotificationService notificationService;
+    private final AudioCompressService audioCompressService;
 
-    public AudioController(AudioRepository audioRepository, LikeRepository likeRepository, R2StorageService r2StorageService, NotificationService notificationService) {
+    public AudioController(
+            AudioRepository audioRepository,
+            LikeRepository likeRepository,
+            R2StorageService r2StorageService,
+            NotificationService notificationService,
+            AudioCompressService audioCompressService
+    ) {
         this.audioRepository = audioRepository;
         this.likeRepository = likeRepository;
         this.r2StorageService = r2StorageService;
         this.notificationService = notificationService;
+        this.audioCompressService = audioCompressService;
     }
 
     private String formatDuration(long seconds) {
@@ -170,18 +179,68 @@ public class AudioController {
     public ResponseEntity<?> uploadAudio(@RequestParam("file") MultipartFile file,
                                          @RequestParam(value = "folder", defaultValue = "audios") String folder) {
         Map<String, Object> response = new HashMap<>();
+        // Cover / ảnh: upload thẳng R2
+        if (!audioCompressService.isAudioFolder(folder)) {
+            try {
+                String url = r2StorageService.uploadFile(file, folder);
+                response.put("success", true);
+                response.put("url", url);
+                response.put("message", "Upload thành công.");
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                response.put("success", false);
+                response.put("message", "Upload thất bại: " + e.getMessage());
+                return ResponseEntity.badRequest().body(response);
+            }
+        }
+
+        // Audio: lưu tạm → FFmpeg nén MP3 mono 48k → R2 → xóa temp
+        AudioCompressService.CompressResult compressed = null;
         try {
-            String url = r2StorageService.uploadFile(file, folder);
-            String duration = "audios".equals(folder) ? extractDuration(file) : null;
+            long originalSize = file.getSize();
+            compressed = audioCompressService.compressToMp3(file);
+            String url = r2StorageService.uploadPath(
+                    compressed.getOutputPath(),
+                    "audios",
+                    compressed.getOriginalName(),
+                    compressed.getContentType()
+            );
+
+            String duration = compressed.getDuration();
+            if (duration == null || "0:00".equals(duration)) {
+                String fallback = extractDurationFromPath(compressed.getOutputPath());
+                if (fallback != null) duration = fallback;
+            }
+
             response.put("success", true);
             response.put("url", url);
-            if (duration != null) response.put("duration", duration);
-            response.put("message", "Upload thành công.");
+            response.put("duration", duration != null ? duration : "0:00");
+            response.put("fileSize", compressed.getOutputSize());
+            response.put("originalSize", originalSize);
+            response.put("compressed", true);
+            response.put("message", "Đã nén và upload audio thành công.");
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             response.put("success", false);
-            response.put("message", "Upload thất bại: " + e.getMessage());
+            response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Upload audio thất bại: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        } finally {
+            audioCompressService.cleanup(compressed);
+        }
+    }
+
+    private String extractDurationFromPath(java.nio.file.Path path) {
+        try {
+            AudioFile audioFile = AudioFileIO.read(path.toFile());
+            long durationSec = audioFile.getAudioHeader().getTrackLength();
+            return formatDuration(durationSec);
+        } catch (Exception e) {
+            return null;
         }
     }
 

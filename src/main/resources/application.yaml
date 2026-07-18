@@ -56,3 +56,10 @@ cors:
 
 server:
   port: ${PORT:8080}
+
+# Nén audio admin upload (cần FFmpeg trên PATH hoặc Docker)
+audio:
+  ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+  bitrate-kbps: ${AUDIO_BITRATE_KBPS:48}
+  sample-rate: ${AUDIO_SAMPLE_RATE:22050}
+  process-timeout-sec: ${AUDIO_PROCESS_TIMEOUT_SEC:600}
