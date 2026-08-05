@@ -11,6 +11,7 @@ import com.example.Back_End.service.R2StorageService;
 import jakarta.validation.Valid;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +40,7 @@ public class AudioController {
     public AudioController(
             AudioRepository audioRepository,
             LikeRepository likeRepository,
-            R2StorageService r2StorageService,
+            @Lazy R2StorageService r2StorageService,
             NotificationService notificationService,
             AudioCompressService audioCompressService
     ) {
