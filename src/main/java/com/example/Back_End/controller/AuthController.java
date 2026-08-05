@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -96,7 +97,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         Map<String, Object> response = new HashMap<>();
 
-        String email = body.get("email");
+        String email = normalizeEmail(body.get("email"));
         String password = body.get("password");
 
         if (email == null || password == null) {
@@ -140,7 +141,7 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         System.out.println("[AuthController] forgot-password called, body=" + body);
         Map<String, Object> response = new HashMap<>();
-        String email = body.get("email");
+        String email = normalizeEmail(body.get("email"));
 
         if (email == null || email.isBlank()) {
             System.out.println("[AuthController] forgot-password: email is blank");
@@ -165,6 +166,7 @@ public class AuthController {
         } catch (Exception e) {
             System.out.println("[AuthController] forgot-password: email send FAILED, " + e.getMessage());
             e.printStackTrace();
+            otpService.removeOtp(email);
             response.put("success", false);
             response.put("message", "Không thể gửi email. Vui lòng thử lại sau.");
             return ResponseEntity.internalServerError().body(response);
@@ -180,7 +182,7 @@ public class AuthController {
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
         System.out.println("[AuthController] verify-otp called, body=" + body);
         Map<String, Object> response = new HashMap<>();
-        String email = body.get("email");
+        String email = normalizeEmail(body.get("email"));
         String otp = body.get("otp");
 
         if (email == null || otp == null || otp.isBlank()) {
@@ -204,7 +206,7 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
         System.out.println("[AuthController] reset-password called, body keys=" + (body != null ? body.keySet() : "null"));
         Map<String, Object> response = new HashMap<>();
-        String email = body.get("email");
+        String email = normalizeEmail(body.get("email"));
         String otp = body.get("otp");
         String newPassword = body.get("newPassword");
 
@@ -290,5 +292,9 @@ public class AuthController {
         response.put("success", true);
         response.put("data", data);
         return ResponseEntity.ok(response);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 }
