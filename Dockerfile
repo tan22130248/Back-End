@@ -5,9 +5,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && ffmpeg -version
 
-ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Djava.awt.headless=true"
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=20.0 -XX:MaxRAMPercentage=45.0 -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -Xss512k -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Djava.awt.headless=true"
 ENV SPRING_JPA_OPEN_IN_VIEW=false
-ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
+ENV SPRING_JPA_HIBERNATE_DDL_AUTO=none
 ENV SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT=5000
 ENV SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT=5000
 ENV SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT=5000
